@@ -1,0 +1,498 @@
+```html
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>貓貓微積分教室</title>
+    <style>
+        :root {
+            --primary: #4da6ff;
+            --secondary: #0073e6;
+            --bg: #e6f2ff;
+            --card-bg: #ffffff;
+            --text: #333333;
+            --accent: #ff6666;
+        }
+        
+        * {
+            box-sizing: border-box;
+            font-family: 'Helvetica Neue', Arial, 'Microsoft JhengHei', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 115, 230, 0.15);
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--secondary);
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: var(--bg);
+            border: 2px solid var(--primary);
+            color: var(--secondary);
+            padding: 12px 24px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-btn.active, .tab-btn:hover {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 10px rgba(77, 166, 255, 0.4);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .explanation {
+            background: #f8fbff;
+            border-left: 5px solid var(--primary);
+            padding: 18px;
+            margin-bottom: 20px;
+            border-radius: 0 12px 12px 0;
+            line-height: 1.7;
+            font-size: 16px;
+        }
+
+        .canvas-container {
+            text-align: center;
+            margin-bottom: 20px;
+            border: 2px dashed #b3d9ff;
+            border-radius: 16px;
+            padding: 10px;
+            background: #fafcff;
+            position: relative;
+        }
+
+        canvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            background: white;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .controls {
+            background: #f0f7ff;
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+            border: 1px solid #cce6ff;
+        }
+
+        .controls p {
+            margin: 10px 0 0 0;
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--secondary);
+        }
+
+        /* 統一美化的 Slider */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            max-width: 500px;
+            background: transparent;
+            margin: 10px 0;
+        }
+        input[type=range]:focus {
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 28px;
+            width: 28px;
+            border-radius: 50%;
+            background: var(--secondary);
+            cursor: pointer;
+            margin-top: -10px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+            border: 3px solid white;
+            transition: transform 0.1s;
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 8px;
+            cursor: pointer;
+            background: #b3d9ff;
+            border-radius: 4px;
+        }
+
+        .highlight {
+            color: var(--accent);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+        <h1>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                <circle cx="12" cy="15" r="5" />
+                <circle cx="6" cy="11" r="2.5" />
+                <circle cx="18" cy="11" r="2.5" />
+                <circle cx="9" cy="6" r="2.5" />
+                <circle cx="15" cy="6" r="2.5" />
+            </svg>
+            貓貓微積分教室
+        </h1>
+        
+        <div class="tabs">
+            <button class="tab-btn active" id="btn-tab1" onclick="showTab('tab1')">
+                方法一：貓貓快跑 (瞬時速度)
+            </button>
+            <button class="tab-btn" id="btn-tab2" onclick="showTab('tab2')">
+                方法二：貓貓爬山 (切線斜率)
+            </button>
+        </div>
+
+        <!-- 方法一：瞬時速度 -->
+        <div id="tab1" class="tab-content" style="display: block;">
+            <div class="explanation">
+                <strong style="color:var(--secondary); font-size: 1.1em;">瞬時速度 (Rate of Change)</strong><br>
+                想像下貓貓喺度加速跑緊！平時我哋計「平均速度」，就係睇佢一段時間內跑咗幾遠。<br>
+                但如果我哋想知貓貓「呢一極短瞬間」有幾快呢？試下拉動下面嘅滑桿，將 <b>時間間隔 (Δt)</b> 縮到無限接近 0。<br>
+                你會見到代表平均速度嘅紅線（割線），慢慢變成咗完美貼住曲線嘅 <span class="highlight">切線 (Tangent Line)</span>。呢個「極短時間內嘅速度」，數學上就叫做嗰一點嘅 <b>導數 (Derivative)</b>，即係瞬時速度啦！
+            </div>
+            
+            <div class="canvas-container">
+                <canvas id="canvas1" width="700" height="350"></canvas>
+            </div>
+
+            <div class="controls">
+                <input type="range" id="dt-slider" min="0.01" max="2" step="0.01" value="2">
+                <p>時間間隔 Δt: <span id="dt-value" class="highlight">2.00</span> 秒</p>
+            </div>
+        </div>
+
+        <!-- 方法二：切線斜率 -->
+        <div id="tab2" class="tab-content">
+            <div class="explanation">
+                <strong style="color:var(--secondary); font-size: 1.1em;">切線斜率 (Slope of Tangent Line)</strong><br>
+                今次貓貓去咗爬波浪形嘅山丘！山丘有啲地方平坦，有啲地方好斜。<br>
+                試下郁動滑桿幫貓貓行山。貓貓腳下嗰條紅線就係「切線」。數學上嘅 <b>導數</b>，其實就代表住這條線嘅 <span class="highlight">斜率 (Slope)</span>，即係「這一個點的陡峭程度」。<br>
+                斜率越大，山就越陡峭；當行到山頂或者谷底，地面變平，斜率(導數) 就會變成 0 啦！
+            </div>
+
+            <div class="canvas-container">
+                <canvas id="canvas2" width="700" height="350"></canvas>
+            </div>
+
+            <div class="controls">
+                <input type="range" id="x-slider" min="50" max="650" step="1" value="200">
+                <p>目前斜率 (陡峭程度): <span id="slope-value" class="highlight">0.00</span></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 繪製可愛貓貓的共用函數
+    function drawCuteCat(ctx, x, y, angle = 0, scale = 1, color="#4da6ff", isGhost = false) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(angle);
+        ctx.scale(scale, scale);
+        if (isGhost) ctx.globalAlpha = 0.4;
+
+        // 尾巴
+        ctx.beginPath();
+        ctx.moveTo(-15, 0);
+        ctx.quadraticCurveTo(-35, -15, -20, -35);
+        ctx.lineWidth = 5;
+        ctx.lineCap = "round";
+        ctx.strokeStyle = color;
+        ctx.stroke();
+
+        // 身體
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 22, 16, 0, 0, Math.PI*2);
+        ctx.fill();
+
+        // 頭部
+        ctx.beginPath();
+        ctx.arc(18, -8, 15, 0, Math.PI*2);
+        ctx.fill();
+
+        // 耳朵
+        ctx.beginPath();
+        ctx.moveTo(8, -18); ctx.lineTo(10, -32); ctx.lineTo(20, -21);
+        ctx.moveTo(20, -21); ctx.lineTo(30, -30); ctx.lineTo(29, -15);
+        ctx.fill();
+        
+        // 內耳 (粉紅)
+        ctx.fillStyle = "#ffb3cc";
+        ctx.beginPath();
+        ctx.moveTo(10, -20); ctx.lineTo(11, -29); ctx.lineTo(18, -21);
+        ctx.moveTo(21, -21); ctx.lineTo(28, -27); ctx.lineTo(27, -17);
+        ctx.fill();
+
+        // 眼睛
+        ctx.fillStyle = "white";
+        ctx.beginPath(); ctx.arc(22, -10, 4.5, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(31, -8, 4.5, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = "black";
+        ctx.beginPath(); ctx.arc(23, -10, 2.5, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(32, -8, 2.5, 0, Math.PI*2); ctx.fill();
+
+        // 嘴巴
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(26, -3);
+        ctx.lineTo(28, -1);
+        ctx.lineTo(30, -3);
+        ctx.stroke();
+
+        // 腳
+        ctx.lineWidth = 4.5;
+        ctx.strokeStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(-10, 12); ctx.lineTo(-10, 22); // 後腳
+        ctx.moveTo(8, 12); ctx.lineTo(8, 22);   // 前腳
+        ctx.stroke();
+
+        ctx.restore();
+    }
+
+    // 分頁切換邏輯
+    function showTab(tabId) {
+        document.getElementById('tab1').style.display = 'none';
+        document.getElementById('tab2').style.display = 'none';
+        document.getElementById(tabId).style.display = 'block';
+        
+        document.getElementById('btn-tab1').classList.remove('active');
+        document.getElementById('btn-tab2').classList.remove('active');
+        document.getElementById('btn-' + tabId).classList.add('active');
+        
+        if(tabId === 'tab1') drawMethod1();
+        if(tabId === 'tab2') drawMethod2();
+    }
+
+    /* ================= 方法一：瞬時速度 ================= */
+    const canvas1 = document.getElementById('canvas1');
+    const ctx1 = canvas1.getContext('2d');
+    const dtSlider = document.getElementById('dt-slider');
+    const dtValueSpan = document.getElementById('dt-value');
+
+    function drawMethod1() {
+        ctx1.clearRect(0, 0, canvas1.width, canvas1.height);
+        let dt = parseFloat(dtSlider.value);
+        dtValueSpan.innerText = dt.toFixed(2);
+
+        // 畫座標軸
+        ctx1.beginPath();
+        ctx1.moveTo(50, 300); ctx1.lineTo(650, 300); // X 軸
+        ctx1.moveTo(50, 300); ctx1.lineTo(50, 50);   // Y 軸
+        ctx1.strokeStyle = "#cccccc";
+        ctx1.lineWidth = 2;
+        ctx1.stroke();
+        
+        ctx1.fillStyle = "#888";
+        ctx1.font = "14px Arial";
+        ctx1.fillText("時間 (t)", 610, 320);
+        ctx1.fillText("距離", 15, 45);
+
+        // 畫曲線 (y = 0.5 * t^2)
+        ctx1.beginPath();
+        for(let t = 0; t <= 5.5; t += 0.05) {
+            let x = 50 + t * 100;
+            let y = 300 - (0.5 * t * t) * 16;
+            if(t === 0) ctx1.moveTo(x, y);
+            else ctx1.lineTo(x, y);
+        }
+        ctx1.strokeStyle = "#99ccff";
+        ctx1.lineWidth = 4;
+        ctx1.stroke();
+
+        // 計算 A 點 (現在, 固定於 t=2) 和 B 點 (未來, t=2+dt)
+        let t1 = 2;
+        let x1 = 50 + t1 * 100;
+        let y1 = 300 - (0.5 * t1 * t1) * 16;
+
+        let t2 = t1 + dt;
+        let x2 = 50 + t2 * 100;
+        let y2 = 300 - (0.5 * t2 * t2) * 16;
+
+        // 畫出割線 / 切線
+        let m_px = (y2 - y1) / (x2 - x1); // 畫布上的斜率
+        ctx1.beginPath();
+        ctx1.moveTo(x1 - 150, y1 - 150 * m_px);
+        ctx1.lineTo(x2 + 150, y2 + 150 * m_px);
+        
+        if(dt <= 0.05) {
+            ctx1.strokeStyle = "#ff4d4d"; // 極近時顯示為切線顏色
+            ctx1.setLineDash([]);
+            ctx1.lineWidth = 3;
+        } else {
+            ctx1.strokeStyle = "#ff9999";
+            ctx1.setLineDash([8, 6]);
+            ctx1.lineWidth = 2;
+        }
+        ctx1.stroke();
+        ctx1.setLineDash([]);
+
+        // 標記數學點
+        ctx1.beginPath(); ctx1.arc(x2, y2, 6, 0, Math.PI*2); ctx1.fillStyle = "#80bfff"; ctx1.fill();
+        ctx1.beginPath(); ctx1.arc(x1, y1, 6, 0, Math.PI*2); ctx1.fillStyle = "#0073e6"; ctx1.fill();
+
+        // 畫貓貓
+        drawCuteCat(ctx1, x2, y2 - 20, -Math.PI/12, 0.7, "#4da6ff", true); // 未來的貓 (半透明)
+        drawCuteCat(ctx1, x1, y1 - 20, -Math.PI/8, 0.9, "#0073e6", false); // 現在的貓
+
+        // 顯示數據
+        let actualDerivative = t1; // d(0.5 t^2)/dt = t, 當 t=2 時導數為 2.00
+        let avgSlope = (0.5 * t2 * t2 - 0.5 * t1 * t1) / dt;
+
+        ctx1.fillStyle = "#333";
+        ctx1.font = "bold 18px 'Helvetica Neue', Arial, sans-serif";
+        ctx1.fillText(`精準瞬時速度 (導數): 2.00`, 80, 50);
+        
+        ctx1.fillStyle = dt <= 0.05 ? "#ff4d4d" : "#0073e6";
+        ctx1.fillText(`計算出的平均速度: ${avgSlope.toFixed(2)}`, 80, 80);
+
+        if(dt <= 0.05) {
+            ctx1.fillStyle = "#ff4d4d";
+            ctx1.font = "bold 16px sans-serif";
+            ctx1.fillText(`✨ Δt 接近 0！平均速度變成了瞬時速度 (切線)！`, 80, 110);
+        }
+    }
+    dtSlider.addEventListener('input', drawMethod1);
+
+    /* ================= 方法二：切線斜率 ================= */
+    const canvas2 = document.getElementById('canvas2');
+    const ctx2 = canvas2.getContext('2d');
+    const xSlider = document.getElementById('x-slider');
+    const slopeValueSpan = document.getElementById('slope-value');
+
+    function drawMethod2() {
+        ctx2.clearRect(0, 0, canvas2.width, canvas2.height);
+        let x_center = parseFloat(xSlider.value);
+
+        // 畫山丘 (Sine 曲線) y = 200 - 80 * sin((x - 350) / 70)
+        ctx2.beginPath();
+        for(let x = 0; x <= 700; x += 2) {
+            let y = 200 - 80 * Math.sin((x - 350) / 70);
+            if(x === 0) ctx2.moveTo(x, y);
+            else ctx2.lineTo(x, y);
+        }
+        ctx2.strokeStyle = "#66b3ff";
+        ctx2.lineWidth = 6;
+        ctx2.stroke();
+        
+        // 塗滿山丘下方
+        ctx2.lineTo(700, 350);
+        ctx2.lineTo(0, 350);
+        ctx2.fillStyle = "#e6f2ff";
+        ctx2.fill();
+
+        // 貓貓位置與數學運算
+        let cat_y = 200 - 80 * Math.sin((x_center - 350) / 70);
+        
+        // 數學上的斜率 (導數): d(sin(u))/dx = cos(u) * u'
+        // 畫布 Y 軸是反向的，所以視覺斜率需乘 -1，但呈現給用戶的數值保持正常物理邏輯
+        let math_slope = (80 / 70) * Math.cos((x_center - 350) / 70);
+        let visual_slope = -math_slope; 
+
+        // 更新文字
+        slopeValueSpan.innerText = math_slope.toFixed(2);
+        if (Math.abs(math_slope) < 0.05) {
+            slopeValueSpan.style.color = "#00cc44";
+        } else {
+            slopeValueSpan.style.color = "var(--accent)";
+        }
+
+        // 畫出切線 (Tangent Line)
+        ctx2.beginPath();
+        ctx2.moveTo(x_center - 100, cat_y - 100 * visual_slope);
+        ctx2.lineTo(x_center + 100, cat_y + 100 * visual_slope);
+        ctx2.strokeStyle = "#ff4d4d";
+        ctx2.lineWidth = 4;
+        ctx2.stroke();
+
+        // 畫正在爬山的貓貓 (根據斜率旋轉)
+        let angle = Math.atan(visual_slope);
+        drawCuteCat(ctx2, x_center, cat_y - 15, angle, 1.1, "#0073e6");
+
+        // 顯示狀態提示文字
+        ctx2.fillStyle = "#333";
+        ctx2.font = "bold 20px 'Helvetica Neue', Arial, sans-serif";
+        ctx2.fillText(`目前導數 (斜率): ${math_slope.toFixed(2)}`, 30, 50);
+
+        ctx2.font = "bold 16px sans-serif";
+        if (math_slope > 0.5) {
+            ctx2.fillStyle = "#ff4d4d"; ctx2.fillText("好陡呀！貓貓努力上山中 💦", 30, 80);
+        } else if (math_slope < -0.5) {
+            ctx2.fillStyle = "#ff4d4d"; ctx2.fillText("衝呀！貓貓極速落山中 💨", 30, 80);
+        } else if (Math.abs(math_slope) <= 0.05) {
+            ctx2.fillStyle = "#009933"; ctx2.fillText("平地！斜率係 0，貓貓可以休息下 🍵", 30, 80);
+        } else {
+            ctx2.fillStyle = "#0073e6"; ctx2.fillText("輕鬆散步中 🐾", 30, 80);
+        }
+    }
+    xSlider.addEventListener('input', drawMethod2);
+
+    // 初始載入
+    window.onload = function() {
+        showTab('tab1');
+    };
+</script>
+
+</body>
+</html>
+
+```
